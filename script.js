@@ -62,6 +62,22 @@ function loadData() {
             }
         });
     }
+	displayLocalStorageSize();
 }
 
 window.onload = loadData;
+
+function getLocalStorageSize() {
+    let total = 0;
+    for (let key in localStorage) {
+        if (localStorage.hasOwnProperty(key)) {
+            total += localStorage.getItem(key).length;
+        }
+    }
+    return total;
+}
+
+function displayLocalStorageSize() {
+    const size = getLocalStorageSize();
+    document.getElementById('localStorageSize').innerText = `Taille du local Storage : ${size} octets`;
+}
