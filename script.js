@@ -6,16 +6,21 @@ function addDocument() {
         const table = document.createElement('table');
         table.className = 'table';
         table.id = documentName;
-		
-		const tableName = document.createElement('div');
-		tableName.textContent = `${documentName}`;
-
+        
+        const tableName = document.createElement('div');
+        tableName.textContent = `${documentName} : `;
+        
+        const counter = document.createElement('div');
+        counter.id = `counter-${documentName}`;
+        counter.textContent = `0/${students.length}`;
+        
         students.forEach(student => {
             const cell = document.createElement('td');
             cell.className = 'red';
             cell.innerText = student;
             cell.onclick = () => {
                 cell.className = cell.className === 'red' ? 'green' : 'red';
+                updateCounter(documentName);
                 saveData();
             };
             table.appendChild(cell);
@@ -24,12 +29,13 @@ function addDocument() {
         const deleteButton = document.createElement('button');
         deleteButton.innerText = 'Supprimer';
         deleteButton.onclick = () => {
-            document.getElementById('documents').removeChild(table);
+            document.getElementById('documents').removeChild(container);
             saveData();
         };
 
         const container = document.createElement('div');
-		container.appendChild(tableName);
+        container.appendChild(tableName);
+        container.appendChild(counter);
         container.appendChild(table);
         container.appendChild(deleteButton);
 
@@ -38,9 +44,26 @@ function addDocument() {
     }
 }
 
+function updateCounter(documentName) {
+    const table = document.getElementById(documentName);
+    if (table) {
+        const cells = table.getElementsByTagName('td');
+        let greenCount = 0;
+        for (let cell of cells) {
+            if (cell.className === 'green') {
+                greenCount++;
+            }
+        }
+        document.getElementById(`counter-${documentName}`).textContent = `${greenCount}/${cells.length}`;
+    } else {
+        console.error(`Table with id ${documentName} not found.`);
+    }
+}
+
 function saveData() {
     const documents = document.getElementById('documents').innerHTML;
     localStorage.setItem('documents', documents);
+    displayLocalStorageSize();
 }
 
 function loadData() {
@@ -50,6 +73,7 @@ function loadData() {
         document.querySelectorAll('.table td').forEach(cell => {
             cell.onclick = () => {
                 cell.className = cell.className === 'red' ? 'green' : 'red';
+                updateCounter(cell.closest('.table').id);
                 saveData();
             };
         });
@@ -61,23 +85,27 @@ function loadData() {
                 };
             }
         });
+        document.querySelectorAll('.table').forEach(table => {
+            updateCounter(table.id);
+        });
     }
-	displayLocalStorageSize();
+    displayLocalStorageSize();
 }
 
 window.onload = loadData;
 
-function getLocalStorageSize() {
+function getLocalStorageSizeInMB() {
     let total = 0;
     for (let key in localStorage) {
         if (localStorage.hasOwnProperty(key)) {
-            total += localStorage.getItem(key).length;
+            total += ((localStorage[key].length + key.length) * 2);
         }
     }
-    return total;
+    // Convertir les octets en mégaoctets
+    return (total / (1024 * 1024)).toFixed(2);
 }
 
 function displayLocalStorageSize() {
-    const size = getLocalStorageSize();
-    document.getElementById('localStorageSize').innerText = `Taille du local Storage : ${size} octets`;
+    const size = getLocalStorageSizeInMB();
+    document.getElementById('localStorageSize').innerText = `Taille du local Storage : ${size} Mo`;
 }
