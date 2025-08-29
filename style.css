@@ -21,19 +21,18 @@ div {
     font-weight: bold;
 }
 
-.table {
-    margin-bottom: 2px;
-    border-collapse: collapse;
-	margin-right: 10px;
+.table td {
+    padding: 8px;
+    border: 1px solid #ccc;
+    text-align: center;
+    min-width: 80px;
+    word-break: break-word;
 }
 
-.table td {
-    width: 30px;
-    height: 30px;
-    text-align: center;
-    vertical-align: middle;
-    border: 1px solid #ccc;
-    cursor: pointer;
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
 }
 
 .table .red {
