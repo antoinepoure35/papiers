@@ -129,4 +129,28 @@ function loadData() {
     });
 }
 
+let db;
+
+function initDB() {
+    return new Promise((resolve, reject) => {
+
+        const request = indexedDB.open("GestionDocuments", 1);
+
+        request.onupgradeneeded = (event) => {
+            db = event.target.result;
+
+            if (!db.objectStoreNames.contains("data")) {
+                db.createObjectStore("data");
+            }
+        };
+
+        request.onsuccess = (event) => {
+            db = event.target.result;
+            resolve();
+        };
+
+        request.onerror = () => reject(request.error);
+    });
+}
+
 window.onload = loadData;
