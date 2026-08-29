@@ -153,4 +153,7 @@ function initDB() {
     });
 }
 
-window.onload = loadData;
+(async () => {
+    await initDB();
+    await loadData();
+})();
