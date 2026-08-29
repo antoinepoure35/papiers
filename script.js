@@ -2,6 +2,8 @@ const students = [
 "A Juliette", "A Pierre", "B Maddy", "B Matthieu", "C Stacy", "C Célestin", "C Victoire", "C Maxime", "C Gwenola", "C Oscar", "C Lorenzo", "C Axel", "G Cesar", "G Randy", "G Tuomas", "H Gabriel", "L Paul", "L Heidi", "L Juliette", "M Lilas", "M Raphaëlle", "M Telio", "N Malia odile", "N Elise", "O Aelig", "R Marius", "S Laurane", "S Raphaël"
 ];
 
+let db = null;
+
 function addDocument() {
     const documentName = document.getElementById('documentName').value;
     if (documentName) {
@@ -68,21 +70,66 @@ function updateCounter(documentName) {
     }
 }
 
-function saveData() {
+function initDB() {
+    return new Promise((resolve, reject) => {
+
+        const request = indexedDB.open("GestionDocuments", 1);
+
+        request.onupgradeneeded = (event) => {
+            const database = event.target.result;
+
+            if (!database.objectStoreNames.contains("data")) {
+                database.createObjectStore("data");
+            }
+        };
+
+        request.onsuccess = (event) => {
+            db = event.target.result;
+            console.log("IndexedDB prête");
+            resolve();
+        };
+
+        request.onerror = (event) => {
+            console.error("Erreur IndexedDB", event);
+            reject(event);
+        };
+    });
+}
+
+async function saveData() {
+
+    if (!db) {
+        console.warn("DB non prête");
+        return;
+    }
 
     const documents = document.getElementById('documents').innerHTML;
 
-    const transaction = db.transaction(["data"], "readwrite");
-    const store = transaction.objectStore("data");
+    return new Promise((resolve, reject) => {
 
-    store.put(documents, "documents");
+        const transaction = db.transaction(["data"], "readwrite");
+        const store = transaction.objectStore("data");
 
-    transaction.oncomplete = () => {
-        console.log("Données sauvegardées");
-    };
+        store.put(documents, "documents");
+
+        transaction.oncomplete = () => {
+            console.log("Données sauvegardées");
+            resolve();
+        };
+
+        transaction.onerror = (error) => {
+            console.error(error);
+            reject(error);
+        };
+    });
 }
 
-function loadData() {
+async function loadData() {
+
+    if (!db) {
+        console.warn("DB non prête");
+        return;
+    }
 
     return new Promise((resolve) => {
 
@@ -101,17 +148,29 @@ function loadData() {
 
                 document.querySelectorAll('.table td').forEach(cell => {
                     cell.onclick = () => {
-                        cell.className = cell.className === 'red' ? 'green' : 'red';
-                        updateCounter(cell.closest('.table').id);
+                        cell.className =
+                            cell.className === 'red'
+                                ? 'green'
+                                : 'red';
+
+                        updateCounter(
+                            cell.closest('.table').id
+                        );
+
                         saveData();
                     };
                 });
 
                 document.querySelectorAll('button').forEach(button => {
+
                     if (button.innerText === 'Supprimer') {
+
                         button.onclick = () => {
-                            document.getElementById('documents')
+
+                            document
+                                .getElementById('documents')
                                 .removeChild(button.parentElement);
+
                             saveData();
                         };
                     }
@@ -125,35 +184,27 @@ function loadData() {
             resolve();
         };
 
-        request.onerror = () => resolve();
-    });
-}
-
-let db;
-
-function initDB() {
-    return new Promise((resolve, reject) => {
-
-        const request = indexedDB.open("GestionDocuments", 1);
-
-        request.onupgradeneeded = (event) => {
-            db = event.target.result;
-
-            if (!db.objectStoreNames.contains("data")) {
-                db.createObjectStore("data");
-            }
-        };
-
-        request.onsuccess = (event) => {
-            db = event.target.result;
+        request.onerror = () => {
+            console.error("Erreur de chargement");
             resolve();
         };
-
-        request.onerror = () => reject(request.error);
     });
 }
 
-(async () => {
-    await initDB();
-    await loadData();
-})();
+window.addEventListener('load', async () => {
+
+    try {
+
+        await initDB();
+
+        await loadData();
+
+        console.log("Application prête");
+
+    } catch (error) {
+
+        console.error(error);
+
+    }
+
+});
