@@ -1,12 +1,5 @@
 const students = [
-    "B.Clément", "B.Camille", "B.Coralie", "C.Edouard",
-    "C.Corentin", "C.Pierre", "D.Alexis", "E.Simon",
-    "G.Malo", "GT.Thomas", "G.Antone", "J.Roxane",
-    "J.Laura", "J.Hugo", "LL.Juliette", "LQ.Bertille",
-    "LR.Martin", "L.Adam", "M.Lucie", "MS.Evan",
-    "M.Samuel", "MDF.Ombeline", "O.Natasha", "P.Elouan",
-    "PP.Driss", "RM.Clementine", "R.Ziad", "R.Clémence",
-    "R.Jeanne", "S.Louann"
+"A Juliette", "A Pierre", "B Maddy", "B Matthieu", "C Stacy", "C Célestin", "C Victoire", "C Maxime", "C Gwenola", "C Oscar", "C Lorenzo", "C Axel", "G Cesar", "G Randy", "G", "Tuomas", "H Gabriel", "L Paul", "L Heidi", "L Juliette", "M Lilas", "M Raphaëlle", "M Telio", "N Malia odile", "N Elise", "O Aelig", "R Marius", "S Laurane", "S Raphaël"
 ];
 
 function addDocument() {
