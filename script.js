@@ -69,51 +69,64 @@ function updateCounter(documentName) {
 }
 
 function saveData() {
+
     const documents = document.getElementById('documents').innerHTML;
-    localStorage.setItem('documents', documents);
-    displayLocalStorageSize();
+
+    const transaction = db.transaction(["data"], "readwrite");
+    const store = transaction.objectStore("data");
+
+    store.put(documents, "documents");
+
+    transaction.oncomplete = () => {
+        console.log("Données sauvegardées");
+    };
 }
 
 function loadData() {
-    const documents = localStorage.getItem('documents');
-    if (documents) {
-        document.getElementById('documents').innerHTML = documents;
-        document.querySelectorAll('.table td').forEach(cell => {
-            cell.onclick = () => {
-                cell.className = cell.className === 'red' ? 'green' : 'red';
-                updateCounter(cell.closest('.table').id);
-                saveData();
-            };
-        });
-        document.querySelectorAll('button').forEach(button => {
-            if (button.innerText === 'Supprimer') {
-                button.onclick = () => {
-                    document.getElementById('documents').removeChild(button.parentElement);
-                    saveData();
-                };
+
+    return new Promise((resolve) => {
+
+        const transaction = db.transaction(["data"], "readonly");
+        const store = transaction.objectStore("data");
+
+        const request = store.get("documents");
+
+        request.onsuccess = () => {
+
+            const documents = request.result;
+
+            if (documents) {
+
+                document.getElementById('documents').innerHTML = documents;
+
+                document.querySelectorAll('.table td').forEach(cell => {
+                    cell.onclick = () => {
+                        cell.className = cell.className === 'red' ? 'green' : 'red';
+                        updateCounter(cell.closest('.table').id);
+                        saveData();
+                    };
+                });
+
+                document.querySelectorAll('button').forEach(button => {
+                    if (button.innerText === 'Supprimer') {
+                        button.onclick = () => {
+                            document.getElementById('documents')
+                                .removeChild(button.parentElement);
+                            saveData();
+                        };
+                    }
+                });
+
+                document.querySelectorAll('.table').forEach(table => {
+                    updateCounter(table.id);
+                });
             }
-        });
-        document.querySelectorAll('.table').forEach(table => {
-            updateCounter(table.id);
-        });
-    }
-    displayLocalStorageSize();
+
+            resolve();
+        };
+
+        request.onerror = () => resolve();
+    });
 }
 
 window.onload = loadData;
-
-function getLocalStorageSizeInMB() {
-    let total = 0;
-    for (let key in localStorage) {
-        if (localStorage.hasOwnProperty(key)) {
-            total += ((localStorage[key].length + key.length) * 2);
-        }
-    }
-    // Convertir les octets en mégaoctets
-    return (total / (1024 * 1024)).toFixed(2);
-}
-
-function displayLocalStorageSize() {
-    const size = getLocalStorageSizeInMB();
-    document.getElementById('localStorageSize').innerText = `Taille du local Storage : ${size} Mo`;
-}
